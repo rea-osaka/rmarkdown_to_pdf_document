@@ -1,0 +1,267 @@
+---
+title: "RMarkdownを使って日本語の文書を作成する"
+author: "福田俊介"
+date: "2019年11月14日"
+output: 
+  pdf_document:
+    latex_engine: xelatex 
+    number_sections: true
+    toc: true
+    toc_depth: 2
+documentclass: bxjsarticle
+classoption: xelatex,ja=standard
+indent: TRUE
+geometry: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+
+if (knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c("beamer", "latex")) {
+
+  options(device = function(file, width = 7, height = 7, ...) {
+    cairo_pdf(tempfile(), width = width, height = height, ...)
+  })
+  
+  knitr::opts_chunk$set(dev="cairo_pdf", dev.args=list(family="ipa"))
+}
+
+```
+
+\newpage
+
+# 概要
+
+RStudioでは、R Markdown書式の文書をkniterで処理することにより、
+簡単にHTML等の体裁の整った文書に変換することが可能ですが、
+PDF文書やこれに日本語の文字を含んだ文書を作成する場合には、
+追加の設定を上手く行わないと、PDF文書の作成を行うことが出来ません。
+そこで、まず、R Markdwon書式から
+日本語のPDF文書を作成するために必要となる追加のインストールすべきものの紹介と、
+日本語利用のための設定テンプレートを紹介します。
+
+
+# PDF出力に必要なもののインストール
+
+本来、Rのシステム上で R Markdown を利用する場合には、rmakrdownパッケージをはじめ、
+それが内部で呼び出す、pandocと呼ばれるプログラム等のインストールも必要となりますが、
+RStudioを使う場合、RStudioインストール時にそれらの必須プログラムが一緒にインストールされているので、
+rmarkdownやpandocのインストールは必要ありません。
+
+しかし、それ以外で、
+R Markdown形式の文書をPDF出力に変換する場合に必須となるのが、次のインストールです。
+
+- \TeX のインストール
+- IPAexフォントのインストール
+
+
+## TeX のインストール
+
+次に、\TeX のシステムをパソコンにインストールします。
+
+\TeX に関する日本語の情報は \TeX Wikiがお勧めです。
+
+- https://texwiki.texjp.org/
+
+このWikiに目を通して興味を持った人は、
+このページに紹介されている\TeX のインストールを行ってもらって構いません。
+但し、先に述べた通り、インストールに数時間を要するので時間に余裕がある時に行いましょう。
+
+しかしここでは、「TinyTeX」という\TeX ディストリビューションを紹介します。
+これを使うと、RStudio上から、簡単に\TeX のインストールが行えます。
+また、インストール時間も格段に短く済みます。
+
+### TinyTeX
+
+TinyTexはRのパッケージなので、まずはパッケージをインストールします。
+
+```{r eval=FALSE}
+install.packages("tinytex")
+```
+
+パッケージのインストールが完了したら、
+コンソールから以下のコマンドを入力して実行します。
+このコマンドによって、\TeX システムがパソコンにインストールされます。
+
+```{r eval=FALSE}
+tinytex::install_tinytex()
+```
+
+このインストール中に、
+幾つかのエラーダイアログ（dllファイルの認識に再起動を促すメッセージ）がでますが、
+OKを選択して、進めて問題ありません。
+
+
+## IPAexフォントのインストール
+
+IPAexフォントについては、以下を参照してください。
+
+- https://ipafont.ipa.go.jp/old/ipaexfont/download.html
+
+\TeX 環境で使われる、フォントであるIPAフォントをインストールします。
+tinytexパッケージから簡単にインストールできるので、
+以下のコマンドで、IPAexフォントをインストールしましょう。
+
+```{r eval=FALSE}
+tinytex::tlmgr_install("ipaex")
+```
+
+\newpage
+
+# 日本語表示用のR Markdownファイルのテンプレート
+
+以下にrmarkdownファイルのテンプレートを紹介します。
+
+
+\begin{Shaded}
+\begin{verbatim}
+
+---
+title: "日本語用テンプレート"
+author: ""
+date: "2019年11月14日"
+output: 
+  pdf_document:
+    latex_engine: xelatex 
+    number_sections: true
+    toc: true
+    toc_depth: 2
+documentclass: bxjsarticle
+classoption: xelatex,ja=standard
+indent: TRUE
+geometry: no
+---
+
+```{r setup, include=FALSE}`r ''`
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+
+if (knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c("beamer", "latex")) {
+
+  options(device = function(file, width = 7, height = 7, ...) {
+    cairo_pdf(tempfile(), width = width, height = height, ...)
+  })
+  
+  knitr::opts_chunk$set(dev="cairo_pdf", dev.args=list(family="ipa"))
+}
+
+````r ''`
+\end{verbatim}
+
+\end{Shaded}
+
+
+
+この内容を`template.rmd`ファイルとして保存しておきます。
+rmdファイルを作成するときには、準備したテンプレートファイルをコピーして利用することで
+いつでも日本語の入ったmarkdownからPDFファイルを作成することが可能になります。
+
+
+
+# あとがき
+
+ここで紹介しているRStudioでの文書作成は、
+幾つかのツールを組み合わせて少し複雑な処理が行われています。
+
+まず、**R Markdown**というのは、
+**Markdown**という文書記述の形式に加えて、
+文書中に記述されたコードを見やすく表示すると十に、
+そのRコードを実行した計算結果やグラフを
+文書に埋め込むことも出来るように拡張したものなのです。
+そこで、このRのコードが埋め込まれた部分について
+**kniter**というプログラムが処理することで、
+その部分をただのMarkdown書式の文書に変換することができます。
+そして、処理されて出来上がったMarkdown文書は、
+**pandoc**というプログラムによって、htmlやpdfの形式に変換することが出来ます。
+
+## カスタマイズを行う場所
+
+このような流れにある rmarkdown による文書作成のカスタマイズについては、
+上記のそれぞれの段階で処理されるときに一緒に渡される引数を設定することで行います。
+
+ここで、大まかに分けて、rmarkdownは、
+Rの処理系からpandocを呼び出すための入口の役目を果たしています。
+そこで、結局は処理をするおおもとであるpandoc側と同じ設定事項を設定して、
+それをpandocに引き渡しているものが多いです。
+一方で、kniterは、文書内のRチャンクを
+どのように処理して出力するかの設定です。
+
+### R Markdownとpandoc
+
+ファイル先頭の '---'で囲まれた部分を、yamlフロントマターと呼びますが、
+R Markdownやpandocにかかわる設定はこの部分で行います。
+
+```{yaml eval=FALSE}
+---
+title: "日本語用テンプレート"
+author: "福田俊介"
+date: "2019年11月14日"
+output: 
+  pdf_document:
+    latex_engine: xelatex 
+    number_sections: true
+    toc: true
+    toc_depth: 2
+documentclass: bxjsarticle
+classoption: xelatex,ja=standard
+indent: TRUE
+geometry: no
+---
+```
+
+この部分の解説については、まず、
+R Markdown: The Definitive Guideにおいて
+R Markdownの開発に関わった人が書いている文書が公開されています。
+この文書のうち、pdfドキュメントに関しては特に次の項目にリファレンスがあります。
+
+- https://bookdown.org/yihui/rmarkdown/pdf-document.html
+
+この文書においてメタデータの変数等についての詳細は、直接pandocのマニュアルを見るように書かれていますが、
+pandocのマニュアルは以下で公開されています。
+
+- Pandoc User's Guide(https://pandoc.org/MANUAL.html)
+
+当該マニュアルの中の、「Options」項目にある「Metadata variables」辺りをみると
+yamlの中で設定できる変数名とその内容についての詳細を知ることが出来ます。
+一方、rmarkdown側も、rmarkdownパッケージのリファレンスをみると、pdf_document()関数のリファレンスに
+その引数についての詳細が記されており、これがyamlでの設定項目とリンクしています。
+rmarkdownのリファレンスは以下にあります。
+
+- https://rmarkdown.rstudio.com/docs/index.html
+- https://rmarkdown.rstudio.com/docs/reference/pdf_document.html
+
+
+### kniter
+
+rmarkdown内のチャンクの書き方そのものについては、先に紹介した 
+R Markdown: The Definitive Guideにも記載されています。
+
+しかし、より詳細については、以下に示す、kniter開発者が記している文書が参考になります。
+
+- https://yihui.org/knitr/
+
+特に、Option項目にあるPlotsの部分が、
+グラフを表示する時のグラフィックデバイスの扱いについての設定項目で、
+日本語等の文字を扱う場合に、設定が必要な部分になります。
+
+
+## その他
+
+pdf出力文書を行う場合、元のrmarkdown文書に、\TeX の書式を埋め込むことが出来ます。
+このため、markdownをpandocで\TeX に変換するだけでは、表現できないと思う場合、
+その部分は、\TeX で記述することが出来ます。（pandocで色々な形式に出力できるという利便性は失われる）
+
+そして、\TeX の知識を十分に得たならば、
+pandocがPDF出力する時に利用するデフォルトのテンプレートをカスタマイズすることで、
+文書の体裁をカスタマイズすることも可能となります。
+
+
+
+
+
+
+
+
+
+
+
+

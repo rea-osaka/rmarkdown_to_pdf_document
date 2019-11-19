@@ -1,0 +1,31 @@
+---
+title: " 日本語用テンプレート "
+author: "福田俊介"
+date: "2019/11/19"
+output:
+  pdf_document:
+    latex_engine: xelatex
+    number_sections: true
+    toc: true
+    toc_depth: 2
+documentclass: bxjsarticle
+classoption: xelatex,ja=standard
+indent: TRUE
+geometry: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = TRUE)
+
+if (knitr::opts_knit$get("rmarkdown.pandoc.to") %in% c("beamer", "latex")) {
+
+  options(device = function(file, width = 7, height = 7, ...) {
+    cairo_pdf(tempfile(), width = width, height = height, ...)
+  })
+  
+  knitr::opts_chunk$set(dev="cairo_pdf", dev.args=list(family="ipa"))
+}
+
+```
+
+# ここから書き始める
